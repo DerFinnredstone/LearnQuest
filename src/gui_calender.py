@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkcalendar import Calendar
+from tkcalendar import *
 
 class CalendarWindow(tk.Toplevel):
     def __init__(self):
@@ -8,6 +8,9 @@ class CalendarWindow(tk.Toplevel):
 
         self.calendar = Calendar(self)
         self.calendar.pack(pady=10)
+
+        self.minute_spinbox = tk.Spinbox(self, from_=0, to=59)
+        self.minute_spinbox.pack(pady=5)
 
         self.event_entry = tk.Entry(self)
         self.event_entry.pack(pady=5)
@@ -25,11 +28,12 @@ class CalendarWindow(tk.Toplevel):
 
     def add_event(self):
         selected_date = self.calendar.selection_get().strftime("%Y-%m-%d")
+        selected_minute = self.minute_spinbox.get()
         event = self.event_entry.get()
         if event:
             self.event_entry.delete(0, tk.END)
-            self.event_listbox.insert(tk.END, f"{selected_date}: {event}")
-            self.save_event(selected_date, event)
+            self.event_listbox.insert(tk.END, f"{selected_date} {selected_minute:02d}: {event}")
+            self.save_event(selected_date, selected_minute, event)
 
     def delete_event(self):
         selected_index = self.event_listbox.curselection()
@@ -39,6 +43,8 @@ class CalendarWindow(tk.Toplevel):
             self.delete_saved_event(selected_event)
 
     def load_events(self):
+        # Laden gespeicherter Termine aus einer Datei oder Datenbank
+        # Beispiel: Laden von "events.txt" mit dem Format: "Datum Minuten: Ereignis"
         try:
             with open("events.txt", "r") as file:
                 events = file.readlines()
@@ -47,11 +53,15 @@ class CalendarWindow(tk.Toplevel):
         except FileNotFoundError:
             pass
 
-    def save_event(self, date, event):
+    def save_event(self, date, minute, event):
+        # Speichern der Termine in einer Datei oder Datenbank
+        # Beispiel: Speichern in "events.txt" mit dem Format: "Datum Minuten: Ereignis"
         with open("events.txt", "a") as file:
-            file.write(f"{date}: {event}\n")
+            file.write(f"{date} {minute:02d}: {event}\n")
 
     def delete_saved_event(self, event):
+        # Löschen des gespeicherten Ereignisses aus der Datei oder Datenbank
+        # Beispiel: Löschen aus "events.txt" basierend auf dem Ereignis
         events = []
         with open("events.txt", "r") as file:
             events = file.readlines()
@@ -60,20 +70,3 @@ class CalendarWindow(tk.Toplevel):
             for saved_event in events:
                 if saved_event.strip() != event:
                     file.write(saved_event)
-
-class LearnQuestGUI:
-    def __init__(self):
-        self.root = tk.Tk()
-        self.root.title("LearnQuest Schulsystem")
-
-        self.create_widgets()
-
-    def create_widgets(self):
-        calendar_button = tk.Button(self.root, text="Kalender", command=self.open_calendar)
-        calendar_button.pack()
-
-    def open_calendar(self):
-        calendar_window = CalendarWindow()
-
-    def run(self):
-        self.root.mainloop()
